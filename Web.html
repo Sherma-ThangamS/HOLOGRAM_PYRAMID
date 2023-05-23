@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HALOLOGRAM 3D VISUALIZATION</title>
+    <style>
+        body {
+            background-color: #de1818;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        main {
+            margin: 50px auto;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        section {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: inline-block;
+            position: relative;
+            border: 2px dashed #ccc;
+            padding: 30px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-input label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .file-input input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input:hover {
+            border-color: #666;
+        }
+
+        .video-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .video-buttons button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hologram-image {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+    </style>
+    <link rel="stylesheet" type="text/css" href="C:\Hologram\styles.css">
+</head>
+<body>
+    <header>
+        <h1>HALOLOGRAM 3D VISUALIZATION</h1>
+    </header>   
+    <main>
+        <section>
+            <h2>3D VIEW</h2>
+            <form action="/process_3d" method="POST" enctype="multipart/form-data">
+                <div class="file-input" id="file-3D">
+                    <label for="file-3D-input">Drag and drop or click to upload 3D File</label>
+                    <input type="file" id="file-3D-input" name="file-3D-input" class="input-file" accept=".mp4" />
+                    <p>Convert to hologram format and generate 3D visualization</p>
+                </div>
+                <span id="upload-status-3d"></span>
+                <input type="submit" value="Upload">
+            </form>
+        </section>
+    
+        <section>
+            <h2>360 DEGREE VIEW</h2>
+            <form action="/process_360" method="POST" enctype="multipart/form-data">
+                <div class="file-input" id="file-360">
+                    <label for="file-360-input">Drag and drop or click to upload 360 Degree File</label>
+                    <input type="file" id="file-360-input" name="file-360-input" class="input-file" accept=".mp4" />
+                    <p>Convert to hologram format and generate 360-degree visualization</p>
+                </div>
+                <input type="submit" value="Upload">
+            </form>
+        </section>
+    
+        <section>
+            <h2>Video Upload</h2>
+            <form action="/process_videos" method="POST" enctype="multipart/form-data">
+                <div class="file-input">
+                    <label for="video-1-input">Video 1</label>
+                    <input type="file" id="video-1-input" name="video-1-input" class="input-file" accept=".mp4" />
+                </div>
+                <div class="file-input">
+                    <label for="video-2-input">Video 2</label>
+                    <input type="file" id="video-2-input" name="video-2-input" class="input-file" accept=".mp4" />
+                </div>
+                <div class="file-input">
+                    <label for="video-3-input">Video 3</label>
+                    <input type="file" id="video-3-input" name="video-3-input" class="input-file" accept=".mp4" />
+                </div>
+                <div class="file-input">
+                    <label for="video-4-input">Video 4</label>
+                    <input type="file" id="video-4-input" name="video-4-input" class="input-file" accept=".mp4" />
+                </div>
+                <input type="submit" value="Upload">
+            </form>
+            <p>Upload videos for hologram format for immersive viewing</p>
+        </section>
+        <h2>Processed Video</h2>
+        <div class="result">
+            {% if video_path %}
+            <video controls>
+                <source src="{{ video_path }}" type="video/mp4">
+            </video>
+            <br>
+            <a href="{{ video_path }}" download>Download Processed Video</a>
+            {% else %}
+            <p>No processed video available</p>
+            {% endif %}
+        </div>
+        <img src="https://www.mit.edu/files/images/202103/MIT-AI-Holography-01-press.jpg" alt="Hologram" class="hologram-image">
+    </main>    
+
+    <footer>
+        &copy; 2023 HTML.am
+    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var form3D = document.getElementById("file-3D");
+            var uploadStatus3D = document.getElementById("upload-status-3d");
+
+            form3D.addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent the form from submitting
+
+                // Display upload status message
+                uploadStatus3D.textContent = "Uploading video...";
+
+                var xhr = new XMLHttpRequest();
+                var formData = new FormData(form3D);
+
+                xhr.open("POST", form3D.action, true);
+
+                // Set up progress event listener
+                xhr.upload.addEventListener("progress", function(e) {
+                    if (e.lengthComputable) {
+                        var progress = Math.round((e.loaded / e.total) * 100);
+                        uploadStatus3D.textContent = "Uploading video: " + progress + "%";
+                    }
+                });
+
+                // Set up load event listener
+                xhr.addEventListener("load", function() {
+                    uploadStatus3D.textContent = "Video uploaded and processed.";
+                });
+
+                // Set up error event listener
+                xhr.addEventListener("error", function() {
+                    uploadStatus3D.textContent = "An error occurred during upload.";
+                });
+
+                // Send the request
+                xhr.send(formData);
+            });
+        });
+    </script>
+    
+</body>
+</html>
